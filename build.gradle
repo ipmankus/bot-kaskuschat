@@ -1,0 +1,33 @@
+buildscript {
+	ext {
+		springBootVersion = '1.5.9.RELEASE'
+	}
+	repositories {
+		mavenCentral()
+	}
+	dependencies {
+		classpath("org.springframework.boot:spring-boot-gradle-plugin:${springBootVersion}")
+	}
+}
+
+apply plugin: 'java'
+apply plugin: 'eclipse'
+apply plugin: 'org.springframework.boot'
+
+group = 'com.example'
+version = '0.0.1-SNAPSHOT'
+sourceCompatibility = 1.8
+
+repositories {
+	mavenCentral()
+}
+
+
+dependencies {
+	// https://mvnrepository.com/artifact/com.fasterxml.jackson.core/jackson-annotations
+	compile group: 'com.fasterxml.jackson.core', name: 'jackson-annotations', version: '2.9.3'
+	compile('org.springframework.boot:spring-boot-starter')
+	testCompile('org.springframework.boot:spring-boot-starter-test')
+	compile group: 'org.apache.httpcomponents', name: 'httpclient', version: '4.5.2'
+	compile("org.springframework.boot:spring-boot-starter-web:1.5.2.RELEASE")
+}
