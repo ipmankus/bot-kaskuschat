@@ -30,6 +30,7 @@ public class BotController {
                                HttpServletResponse response) throws IOException {
 
         ChatFromUser chatFromUser = objectMapper.readValue(requestBody, ChatFromUser.class);
+
         botService.sendMass(chatFromUser);
     }
 

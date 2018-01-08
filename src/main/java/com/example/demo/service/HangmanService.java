@@ -1,6 +1,8 @@
 package com.example.demo.service;
 
 import com.example.demo.model.*;
+import com.example.demo.repositories.UserRepository;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
@@ -20,6 +22,9 @@ public class HangmanService {
 
     @Value("${kaskus.bot.id}")
     private String BOT_ID;
+
+    @Autowired
+    UserRepository userRepository;
 
     private void resetGame() {
         RestTemplate restTemplate = new RestTemplate();
@@ -87,6 +92,7 @@ public class HangmanService {
         if (request.getBody().equals(randomWords)) {
             textOnly.setBody("Selamat anda menang!");
             inGame = false;
+            win(request.getFrom());
         } else {
             if (request.getBody().length() == randomWords.length()) {
                 nyawa--;
@@ -116,6 +122,7 @@ public class HangmanService {
                         textOnly.setBody("Ada :)!");
                         if (counter == randomWords.length()) {
                             textOnly.setBody("Ada :)!\nKamu Menang!");
+                            win(request.getFrom());
                             inGame = false;
                         }
                     } else {
@@ -137,7 +144,9 @@ public class HangmanService {
         if (nyawa == 0) {
             ret.clear();
             textOnly.setBody("Salah!\nHanged !\nKata sebenarnya: " + randomWords);
+            lose(request.getFrom());
             inGame = false;
+
         }
 
         ret.add(textOnly);
@@ -160,6 +169,21 @@ public class HangmanService {
         return new MassToBeSent(BOT_ID, ret);
     }
 
+    public void lose(String email) {
+        User user;
+        user = userRepository.findByEmail(email);
+        user.setScore(user.getScore() - 1);
+        user.setLose(user.getLose() + 1);
+        userRepository.save(user);
+    }
+
+    public void win(String email) {
+        User user;
+        user = userRepository.findByEmail(email);
+        user.setScore(user.getScore() + 4);
+        user.setWin(user.getWin() + 1);
+        userRepository.save(user);
+    }
     public boolean isInGame() {
         return inGame;
     }

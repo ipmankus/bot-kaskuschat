@@ -1,6 +1,7 @@
 package com.example.demo.service;
 
 import com.example.demo.model.*;
+import com.example.demo.repositories.UserRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.codec.binary.Base64;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,6 +35,12 @@ public class BotService {
     @Autowired
     private HangmanService hangmanService;
 
+    @Autowired
+    private UserRepository userRepository;
+
+    @Autowired
+    private LeaderboardService leaderboardService;
+
     public void sendMass(ChatFromUser request) {
         MassToBeSent massToBeSent;
         if (hangmanService.isInGame()) {
@@ -44,7 +51,14 @@ public class BotService {
                 massToBeSent = hangmanService.inGame(request);
             }
         } else if (request.getBody().equals("/hangman")) {
+            if (userRepository.findByEmail(request.getFrom()) == null) {
+                leaderboardService.newUser(request);
+            }
             massToBeSent = hangmanService.start(request);
+        } else if (request.getBody().equals("/leaderboard")) {
+
+            massToBeSent = leaderboardService.getMass(request.getFrom());
+
         } else {
             massToBeSent = normalChat(request);
         }
