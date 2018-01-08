@@ -58,10 +58,12 @@ public class BotService {
     }
 
     public MassToBeSent normalChat(ChatFromUser request) {
+
         RestTemplate restTemplate = new RestTemplate();
-        Quote quote = restTemplate.getForObject("http://gturnquist-quoters.cfapps.io/api/random", Quote.class);
         TextOnly textOnly = new TextOnly();
         List<ChatFromBot> ret = new ArrayList<>();
+
+        Quote quote = restTemplate.getForObject("http://gturnquist-quoters.cfapps.io/api/random", Quote.class);
 
         textOnly.setRecipient(request.getFrom());
         textOnly.setBody("Halo gan " + request.getFromPlain()

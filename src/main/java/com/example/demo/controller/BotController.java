@@ -10,7 +10,6 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.client.RestTemplate;
 
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
@@ -29,10 +28,8 @@ public class BotController {
     public void processRequest(@RequestHeader HttpHeaders httpHeaders,
                                @RequestBody String requestBody,
                                HttpServletResponse response) throws IOException {
-        RestTemplate restTemplate = new RestTemplate();
 
         ChatFromUser chatFromUser = objectMapper.readValue(requestBody, ChatFromUser.class);
-
         botService.sendMass(chatFromUser);
     }
 
