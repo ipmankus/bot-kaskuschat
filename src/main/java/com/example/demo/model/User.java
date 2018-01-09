@@ -1,9 +1,6 @@
 package com.example.demo.model;
 
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
+import javax.persistence.*;
 
 @Entity
 public class User {
@@ -15,7 +12,11 @@ public class User {
     private long win;
     private long lose;
     private long score;
+    private boolean inGame;
 
+    @OneToOne(cascade = CascadeType.ALL)
+    @JoinColumn(name = "question_id")
+    private QuestionDetail questionDetail;
     public long getId() {
         return id;
     }
@@ -62,5 +63,22 @@ public class User {
 
     public void setEmail(String email) {
         this.email = email;
+    }
+
+    public boolean isInGame() {
+        return inGame;
+    }
+
+    public void setInGame(boolean inGame) {
+        this.inGame = inGame;
+    }
+
+
+    public QuestionDetail getQuestionDetail() {
+        return questionDetail;
+    }
+
+    public void setQuestionDetail(QuestionDetail questionDetail) {
+        this.questionDetail = questionDetail;
     }
 }

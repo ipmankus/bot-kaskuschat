@@ -1,7 +1,9 @@
 package com.example.demo.controller;
 
 import com.example.demo.model.ChatFromUser;
+import com.example.demo.repositories.UserRepository;
 import com.example.demo.service.BotService;
+import com.example.demo.service.LeaderboardService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -23,6 +25,10 @@ public class BotController {
     private BotService botService;
     @Autowired
     private ObjectMapper objectMapper;
+    @Autowired
+    private UserRepository userRepository;
+    @Autowired
+    private LeaderboardService leaderboardService;
 
     @PostMapping(value = "/kaskus")
     public void processRequest(@RequestHeader HttpHeaders httpHeaders,
@@ -30,6 +36,10 @@ public class BotController {
                                HttpServletResponse response) throws IOException {
 
         ChatFromUser chatFromUser = objectMapper.readValue(requestBody, ChatFromUser.class);
+
+        if (userRepository.findByEmail(chatFromUser.getFrom()) == null) {
+            leaderboardService.newUser(chatFromUser);
+        }
 
         botService.sendMass(chatFromUser);
     }

@@ -5,17 +5,16 @@ import com.example.demo.repositories.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.RestTemplate;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
 
 @Service
 public class HangmanService {
 
-    private boolean inGame = false, usedWords[] = new boolean[200];
+    private boolean inGame;
+    private long usedWords;
     private String randomWords, used, tertebak;
     private Random rand = new Random();
     private long nyawa, counter;
@@ -26,47 +25,43 @@ public class HangmanService {
     @Autowired
     UserRepository userRepository;
 
-    private void resetGame() {
-        RestTemplate restTemplate = new RestTemplate();
+    private void getFromUser(String email) {
+        User user = userRepository.findByEmail(email);
+        inGame = user.isInGame();
+        usedWords = user.getQuestionDetail().getUsedWords();
+        randomWords = user.getQuestionDetail().getRandomWords();
+        used = user.getQuestionDetail().getUsed();
+        nyawa = user.getQuestionDetail().getNyawa();
+        tertebak = user.getQuestionDetail().getTertebak();
+        counter = user.getQuestionDetail().getCounter();
+    }
 
-        Arrays.fill(usedWords, false);
+    private void setToUser(String email) {
+        User user = userRepository.findByEmail(email);
+        user.setInGame(inGame);
+        user.getQuestionDetail().setUsedWords(usedWords);
+        user.getQuestionDetail().setRandomWords(randomWords);
+        user.getQuestionDetail().setUsed(used);
+        user.getQuestionDetail().setNyawa(nyawa);
+        user.getQuestionDetail().setTertebak(tertebak);
+        user.getQuestionDetail().setCounter(counter);
+        userRepository.save(user);
+    }
 
-        nyawa = 10;
-        used = "";
-        tertebak = "";
-        inGame = true;
-        counter = 0;
-
-        IdAndWord[] idAndWord = restTemplate.getForObject("http://api.wordnik.com/v4/words.json/random" +
-                "Words?hasDictionaryDef=true&minCorpusCount=50&minLength=5&maxLength=15&limit=1" +
-                "&api_key=a2a73e7b926c924fad7001ca3111acd55af2ffabf50eb4ae5", IdAndWord[].class);
-        randomWords = idAndWord[0].getWord().toUpperCase();
-
-
-        for (int i = 0; i < randomWords.length(); ++i) {
-
-            if (rand.nextBoolean() && rand.nextBoolean()) {
-                if (!usedWords[(int) randomWords.charAt(i)]) used += randomWords.charAt(i);
-                usedWords[(int) randomWords.charAt(i)] = true;
-            }
-
-        }
-        for (int i = 0; i < randomWords.length(); ++i) {
-
-            if (usedWords[(int) randomWords.charAt(i)]) {
-                tertebak += randomWords.charAt(i) + " ";
-                counter++;
-            } else
-                tertebak += "_" + " ";
-        }
-
-
+    private void resetGame(ChatFromUser request) {
+        User user = userRepository.findByEmail(request.getFrom());
+        user.setInGame(true);
+        user.setQuestionDetail(new QuestionDetail());
+        getFromUser(request.getFrom());
+        userRepository.save(user);
     }
 
     public MassToBeSent start(ChatFromUser request) {
-        resetGame();
+        resetGame(request);
+
         TextOnly textOnly = new TextOnly();
         List<ChatFromBot> ret = new ArrayList<>();
+        User user = userRepository.findByEmail(request.getFrom());
 
         textOnly.setBody("Halo gan " + request.getFromPlain() +
                 ", " + "Start Game!\n" +
@@ -80,6 +75,7 @@ public class HangmanService {
     }
 
     public MassToBeSent inGame(ChatFromUser request) {
+        getFromUser(request.getFrom());
         TextOnly textOnly = new TextOnly();
         TextOnly textOnly2 = new TextOnly();
         List<ChatFromBot> ret = new ArrayList<>();
@@ -100,7 +96,8 @@ public class HangmanService {
             } else if (request.getBody().length() > 1) {
                 textOnly.setBody("Tebak Semua / Tebak Satu saja :)");
             } else {
-                if (usedWords[(int) request.getBody().charAt(0)]) {
+
+                if ((usedWords & (1 << ((int) request.getBody().charAt(0) - (int) 'A'))) > 0) {
                     textOnly.setBody("Kata sudah dipakai");
                 } else {
                     boolean ada = false;
@@ -131,7 +128,8 @@ public class HangmanService {
                     }
                     tertebak = newTertebak;
                     used += request.getBody();
-                    usedWords[(int) request.getBody().charAt(0)] = true;
+                    usedWords |= (1 << ((int) request.getBody().charAt(0) - (int) 'A'));
+
                 }
             }
 
@@ -150,7 +148,7 @@ public class HangmanService {
         }
 
         ret.add(textOnly);
-
+        setToUser(request.getFrom());
         return new MassToBeSent(BOT_ID, ret);
     }
 
@@ -165,7 +163,7 @@ public class HangmanService {
         ret.add(textOnly);
 
         inGame = false;
-
+        setToUser(request.getFrom());
         return new MassToBeSent(BOT_ID, ret);
     }
 
@@ -184,8 +182,6 @@ public class HangmanService {
         user.setWin(user.getWin() + 1);
         userRepository.save(user);
     }
-    public boolean isInGame() {
-        return inGame;
-    }
+
 
 }

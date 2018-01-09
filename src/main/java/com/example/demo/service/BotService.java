@@ -43,22 +43,17 @@ public class BotService {
 
     public void sendMass(ChatFromUser request) {
         MassToBeSent massToBeSent;
-        if (hangmanService.isInGame()) {
+        User user = userRepository.findByEmail(request.getFrom());
+        if (user.isInGame()) {
             if (request.getBody().equals("/quit")) {
                 massToBeSent = hangmanService.quit(request);
-
             } else {
                 massToBeSent = hangmanService.inGame(request);
             }
         } else if (request.getBody().equals("/hangman")) {
-            if (userRepository.findByEmail(request.getFrom()) == null) {
-                leaderboardService.newUser(request);
-            }
             massToBeSent = hangmanService.start(request);
         } else if (request.getBody().equals("/leaderboard")) {
-
             massToBeSent = leaderboardService.getMass(request.getFrom());
-
         } else {
             massToBeSent = normalChat(request);
         }

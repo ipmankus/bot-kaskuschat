@@ -41,6 +41,7 @@ public class LeaderboardService {
         user.setWin(0L);
         user.setScore(0L);
         user.setEmail(request.getFrom());
+        user.setInGame(false);
         userRepository.save(user);
     }
 }
