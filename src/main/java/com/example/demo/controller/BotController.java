@@ -30,6 +30,7 @@ public class BotController {
     @Autowired
     private LeaderboardService leaderboardService;
 
+
     @PostMapping(value = "/kaskus")
     public void processRequest(@RequestHeader HttpHeaders httpHeaders,
                                @RequestBody String requestBody,

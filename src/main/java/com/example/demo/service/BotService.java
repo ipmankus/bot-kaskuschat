@@ -45,6 +45,7 @@ public class BotService {
         MassToBeSent massToBeSent;
         User user = userRepository.findByEmail(request.getFrom());
         if (user.isInGame()) {
+
             if (request.getBody().equals("/quit")) {
                 massToBeSent = hangmanService.quit(request);
             } else {

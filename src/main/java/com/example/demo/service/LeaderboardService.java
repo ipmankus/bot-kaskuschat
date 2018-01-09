@@ -26,7 +26,7 @@ public class LeaderboardService {
 
         String test = "";
         for (int i = 0; i < allUser.size(); ++i) {
-            test += allUser.get(i).getName() + ' ' + allUser.get(i).getScore();
+            test += allUser.get(i).getName() + ' ' + allUser.get(i).getScore() + '\n';
         }
         textOnly.setBody(test);
         System.out.println(test);
